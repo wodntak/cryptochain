@@ -7,7 +7,7 @@ describe('Blockchain', () => {
     beforeEach(() => {
         blockchain = new Blockchain();
         newChain = new Blockchain();
-        originalChain = Blockchain.chain;
+        originalChain = blockchain.chain;
     })
 
     it('contains a `chain` Array instance', () => {
@@ -73,13 +73,29 @@ describe('Blockchain', () => {
     });
 
     describe('replaceChain()', () => {
+        beforeEach(() => {
+            errorMock = jest.fn();
+            logMock = jest.fn();
+    
+            global.console.error = errorMock;
+            global.console.log = logMock;
+        });
+        
+
+
         describe('when the new chain is not longer', () => {
-            it('does not replace the chain', () => {
+            beforeEach(() => {
                 newChain.chain[0] = { new: 'chain'};
 
                 blockchain.replaceChain(newChain.chain);
+            });
 
+            it('does not replace the chain', () => {
                 expect(blockchain.chain).toEqual(originalChain);
+            });
+
+            it('logs an error', ()=> {
+                expect(errorMock).toHaveBeenCalled();
             });
         });
 
@@ -92,12 +108,17 @@ describe('Blockchain', () => {
             });
             
             describe('and the chain is invalid', () => {
-                it('does not replace the chian', () => {
+                beforeEach(() => {
                     newChain.chain[2].hash = 'some-fake-hash';
 
                     blockchain.replaceChain(newChain.chain);
-
+                })
+                it('does not replace the chian', () => {
                     expect(blockchain.chain).toEqual(originalChain);
+                });
+
+                it('logs an error', () => {
+                    expect(errorMock).toHaveBeenCalled();
                 });
             });
         
@@ -107,6 +128,8 @@ describe('Blockchain', () => {
 
                     expect(blockchain.chain).toEqual(newChain.chain);
                 });
+
+                
             });
         });
 
